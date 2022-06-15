@@ -25,6 +25,8 @@
 
 package org.zoolu.sip.message;
 
+import android.util.Log;
+
 import org.zoolu.sip.address.*;
 import org.zoolu.sip.header.*;
 import org.zoolu.sip.dialog.Dialog;
@@ -135,6 +137,8 @@ public abstract class BaseMessageFactory {
 		// if (body!=null) req.setBody(body); else req.setBody("");
 		req.setBody(body);
 		// System.out.println("DEBUG: MessageFactory: request:\n"+req);
+		Log.i("Regular SIP INVITE", req.toString());
+
 		return req;
 	}
 

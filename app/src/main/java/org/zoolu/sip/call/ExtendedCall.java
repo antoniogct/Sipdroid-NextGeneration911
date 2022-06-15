@@ -128,7 +128,35 @@ public class ExtendedCall extends Call implements ExtendedInviteDialogListener {
 			dialog.inviteWithoutOffer(r_user, from, contact);
 	}
 
-	/** Starts a new call with the <i>invite</i> message request */
+	/**
+	 * when the emergency number is dialed the following method is called in UserAgent.java
+	 *
+	 * It will redirect the flow to the method inviteEmergency(...)
+	 * inside InviteDialog.java
+	 */
+
+	public void callEmergency(String r_user, String from, String contact, String sdp,
+						  String icsi) {
+		printLog("calling " + r_user, LogLevel.MEDIUM);
+		if (username != null)
+			dialog = new ExtendedInviteDialog(sip_provider, username, realm,
+					passwd, this);
+		else
+			dialog = new ExtendedInviteDialog(sip_provider, this);
+		if (from == null)
+			from = from_url;
+		if (contact == null)
+			contact = contact_url;
+		if (sdp != null)
+			local_sdp = sdp;
+		if (local_sdp != null)
+			dialog.inviteEmergency(r_user, from, contact, local_sdp, icsi);
+		else
+			dialog.inviteEmergency(r_user, from, contact, null, null);
+	}
+
+
+		/** Starts a new call with the <i>invite</i> message request */
 	public void call(Message invite) {
 		dialog = new ExtendedInviteDialog(sip_provider, this);
 		local_sdp = invite.getBody();

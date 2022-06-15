@@ -269,7 +269,7 @@ public class UserAgent extends CallListenerAdapter {
 	String realm;
 	
 	/** Makes a new call (acting as UAC). */
-	public boolean call(String target_url, boolean send_anonymous) {
+	public boolean call(String target_url, boolean send_anonymous, boolean emergency) {
 		
 		if (Receiver.call_state != UA_STATE_IDLE)
 		{
@@ -314,16 +314,23 @@ public class UserAgent extends CallListenerAdapter {
 		}		
 		
 		target_url = sip_provider.completeNameAddress(target_url).toString();
-		
-		if (user_profile.no_offer)
-		{
-			call.call(target_url);
+
+		if(emergency) { //change request URI in case of an emergency call
+
+			//Go to ExtendedCall.java and execute callNG911(...)
+			if (user_profile.no_offer) {
+				call.callEmergency(target_url, null, null, null, null);
+			} else {
+				call.callEmergency(target_url, null, null, local_session, icsi);
+			}
+
+		}else {
+			if (user_profile.no_offer) {
+				call.call(target_url);
+			} else {
+				call.call(target_url, local_session, icsi);        // modified by mandrajg
+			}
 		}
-		else
-		{
-			call.call(target_url, local_session, icsi);		// modified by mandrajg
-		}
-		
 		return true;
 	}
 

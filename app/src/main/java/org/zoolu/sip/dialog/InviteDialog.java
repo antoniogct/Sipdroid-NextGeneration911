@@ -235,6 +235,61 @@ public class InviteDialog extends Dialog implements TransactionClientListener,
 		// do invite
 		invite(invite);
 	}
+	/**
+	 * Creates a special INVITE request
+	 *
+	 * With location information embedded in the body
+ 	*/
+	/**
+	 * This method is essential for the NG911 project
+	 *
+	 */
+
+
+	public void inviteEmergency(String callee, String caller, String contact, String session_descriptor, String icsi) {
+		printLog("inside invite(callee,caller,contact,sdp)", LogLevel.MEDIUM);
+		if (!statusIs(D_INIT))
+			return;
+		// else
+		NameAddress to_url = new NameAddress(callee);
+		NameAddress from_url = new NameAddress(caller);
+		SipURL request_uri = to_url.getAddress();
+		NameAddress contact_url = null;
+		if (contact != null) {
+			if (contact.indexOf("sip:") >= 0)
+				contact_url = new NameAddress(contact);
+			else
+				contact_url = new NameAddress(new SipURL(contact, sip_provider
+						.getViaAddress(), sip_provider.getPort()));
+		} else
+			contact_url = from_url;
+
+		// 0. Get Call ID, in order to send it to location provider
+		final String call_id = sip_provider.pickCallId();
+
+
+		// Get longitude and latitude
+
+		//Implement in the future
+
+		double latitude;
+		double longitude;
+		String location;
+
+			latitude = 1.2;
+			longitude = 0.0;
+			location = "1.2";
+
+		Message invite = EmergencyMessageFactory.createInviteRequestEmergency(call_id,
+				sip_provider,
+				request_uri, to_url, from_url, contact_url, session_descriptor,
+				icsi, location);
+
+		//Message invite = EmergencyMessageFactory.createInviteRequestEmergency(sip_provider,
+		//		request_uri, to_url, from_url, contact_url, session_descriptor, icsi, location);
+		// do invite
+		invite(invite);
+	}
 
 	/**
 	 * Starts a new InviteTransactionClient and initializes the dialog state

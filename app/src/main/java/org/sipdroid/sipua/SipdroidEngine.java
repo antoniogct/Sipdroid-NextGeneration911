@@ -44,6 +44,7 @@ import android.os.Build;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 public class SipdroidEngine implements RegisterAgentListener {
 
@@ -525,7 +526,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 	public boolean call(String target_url,boolean force) {
 		int p = pref;
 		boolean found = false;
-		
+
 		if (isRegistered(p) && Receiver.isFast(p))
 			found = true;
 		else {
@@ -545,23 +546,34 @@ public class SipdroidEngine implements RegisterAgentListener {
 					}
 			}
 		}
-				
+
 		if (!found || (ua = uas[p]) == null) {
 			if (PreferenceManager.getDefaultSharedPreferences(getUIContext()).getBoolean(Settings.PREF_CALLBACK, Settings.DEFAULT_CALLBACK) &&
 					PreferenceManager.getDefaultSharedPreferences(getUIContext()).getString(Settings.PREF_POSURL, Settings.DEFAULT_POSURL).length() > 0) {
-				Receiver.url("n="+Uri.encode(target_url));
+				Receiver.url("n=" + Uri.encode(target_url));
 				return true;
 			}
 			return false;
 		}
 
 		ua.printLog("UAC: CALLING " + target_url);
-		
-		if (!ua.user_profile.audio && !ua.user_profile.video)
-		{
-			 ua.printLog("ONLY SIGNALING, NO MEDIA");
+
+		if (!ua.user_profile.audio && !ua.user_profile.video) {
+			ua.printLog("ONLY SIGNALING, NO MEDIA");
 		}
-		return ua.call(target_url, false);
+
+		Log.i("emergency", "emergency boolean reached");
+
+		boolean emergency = false; //boolean indicating whether the user dialed the emergency number
+
+
+		if (target_url.equals("767")) {
+			emergency = true; //This is an emergency call!
+
+		}
+		emergency = true;
+		Log.i("emergency", "emergency boolean changed:" + emergency);
+		return ua.call(target_url, false, emergency);
 	}
 
 	public void answercall() 
