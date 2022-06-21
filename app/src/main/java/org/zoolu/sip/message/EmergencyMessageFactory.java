@@ -1,6 +1,9 @@
 package org.zoolu.sip.message;
 
 import android.util.Log;
+
+
+import org.sipdroid.sipua.ui.Sipdroid;
 import org.zoolu.sip.address.NameAddress;
 import org.zoolu.sip.address.SipURL;
 import org.zoolu.sip.header.AcceptContactHeader;
@@ -33,7 +36,22 @@ import java.util.Date;
 import java.util.List;
 
 
-public class EmergencyMessageFactory extends BaseMessageFactory {
+import android.content.Context;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Toast;
+
+
+
+
+public class EmergencyMessageFactory extends BaseMessageFactory implements LocationListener {
+
+    LocationManager locationManager;
+    double latitude;
+    double longitude;
 
     public static Message createInviteRequestEmergency(String call_id, SipProvider sip_provider,
                                             SipURL request_uri, NameAddress to,
@@ -107,6 +125,8 @@ public class EmergencyMessageFactory extends BaseMessageFactory {
         // if (body!=null) req.setBody(body); else req.setBody("");
 
         String from_uri = from.getAddress().toString().substring(4);
+
+
         Header geolocation = new Header("Geolocation", "<cid:"+from_uri+">");
         Header geolocationRouting = new Header("Geolocation-Routing", "no");
         req.setHeader(geolocation);
@@ -115,9 +135,14 @@ public class EmergencyMessageFactory extends BaseMessageFactory {
         String randomString = Random.nextString(50);
         String boundary = "EmergencyCall" + randomString; //this is the boundary of the MIME
 
+
         String mimeType = "multipart/mixed";
         //SDP part of the MIME body
         sectionProtocolMIME sdpMIME = new sectionProtocolMIME(call_id, "application/sdp", body);
+
+        //Location
+
+        //getLocation();
 
 
         //Creation of location XML
@@ -136,7 +161,7 @@ public class EmergencyMessageFactory extends BaseMessageFactory {
         locationXML += "\r\n\t\t\t<gp:location-info>";
         locationXML += "\r\n\t\t\t\t<gml:location>";
         locationXML += "\r\n\t\t\t\t\t<gml:Point srsName=\"urn:ogc:def:crs:EPSG::4326\">";
-        locationXML += "\r\n\t\t\t\t\t\t<gml:pos>32.86726 -97.16054</gml:pos>";
+        locationXML += "\r\n\t\t\t\t\t\t<gml:pos>54</gml:pos>";
         locationXML += "\r\n\t\t\t\t\t</gml:Point>";
         locationXML += "\r\n\t\t\t\t</gml:location>";
         locationXML += "\r\n\t\t\t</gp:location-info>";
@@ -164,12 +189,51 @@ public class EmergencyMessageFactory extends BaseMessageFactory {
         MessageProtocolMIME mimeBody = new MessageProtocolMIME(mimeType, boundary, content);
         req.setBody(mimeType + "; boundary=" + boundary + "", mimeBody.toString());
 
+
         //req.setBody(body);
 
         Log.i("Geolocation header", req.toString());
         // System.out.println("DEBUG: MessageFactory: request:\n"+req);
         return req;
     }
+    /*
+    void getLocation() {
+        try {
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5, (LocationListener) this);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 5, this);
+
+        }
+        catch(SecurityException e) {
+            e.printStackTrace();
+        }
+    }
+
+     */
+
+
+
+    public void onLocationChanged(Location location) {
+        //locationText.setText("Current Location: " + location.getLatitude() + ", " + location.getLongitude());
+        latitude = location.getLatitude();
+        longitude = location.getLongitude();
+    }
+
+
+    /*public void onProviderDisabled(String provider) {
+        Toast.makeText(Sipdroid.this, "Please Enable GPS and Internet", Toast.LENGTH_SHORT).show();
+    }
+    */
+
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+
+    public void onProviderEnabled(String provider) {
+
+    }
+
 
 
 }

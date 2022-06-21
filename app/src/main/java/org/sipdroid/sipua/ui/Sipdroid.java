@@ -1,19 +1,19 @@
 /*
  * Copyright (C) 2009 The Sipdroid Open Source Project
  * Copyright (C) 2008 Hughes Systique Corporation, USA (http://www.hsc.com)
- * 
+ *
  * This file is part of Sipdroid (http://www.sipdroid.org)
- * 
+ *
  * Sipdroid is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This source code is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this source code; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -32,6 +32,7 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Application;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -43,6 +44,9 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.database.CursorWrapper;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -62,13 +66,25 @@ import android.widget.CursorAdapter;
 import android.widget.Filterable;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Toast;
+
+
+import android.content.Context;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
 /////////////////////////////////////////////////////////////////////
 // this the main activity of Sipdroid
 // for modifying it additional terms according to section 7, GPL apply
 // see ADDITIONAL_TERMS.txt
 /////////////////////////////////////////////////////////////////////
-public class Sipdroid extends Activity implements OnDismissListener {
+public class Sipdroid extends Activity implements OnDismissListener, LocationListener {
 
 	public static final boolean release = true;
 	public static final boolean market = false;
@@ -79,11 +95,19 @@ public class Sipdroid extends Activity implements OnDismissListener {
 	public static final int ABOUT_MENU_ITEM = FIRST_MENU_ID + 2;
 	public static final int EXIT_MENU_ITEM = FIRST_MENU_ID + 3;
 
+	/////////////////////////Location modification
+	Button getLocationBtn;
+	TextView locationText;
+
+	LocationManager locationManager;
+
+	///////////////////////End Location modification
+
 	private static AlertDialog m_AlertDlg;
 	AutoCompleteTextView sip_uri_box,sip_uri_box2;
 	Button createButton;
 	AlertDialog permd;
-	
+
 	@TargetApi(23)
 	@Override
 	public void onStart() {
@@ -91,7 +115,7 @@ public class Sipdroid extends Activity implements OnDismissListener {
 		Receiver.engine(this);
 		if (Receiver.sContext != null)
 			Receiver.engine(this).registerMore();
-		
+
     	if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
 			final String[] perms = {
 				Manifest.permission.READ_CALL_LOG,
@@ -100,7 +124,9 @@ public class Sipdroid extends Activity implements OnDismissListener {
 				Manifest.permission.READ_CONTACTS,
 				Manifest.permission.WRITE_CONTACTS,
 				Manifest.permission.WRITE_CALL_LOG,
-				Manifest.permission.RECORD_AUDIO
+				Manifest.permission.RECORD_AUDIO,
+				Manifest.permission.ACCESS_FINE_LOCATION,
+				Manifest.permission.ACCESS_COARSE_LOCATION
 				};
 			for(String perm: perms)
 				if (checkSelfPermission(perm) != PackageManager.PERMISSION_GRANTED) {
@@ -119,7 +145,7 @@ public class Sipdroid extends Activity implements OnDismissListener {
 			        return;
 				}
     	}
-    	
+
 	    ContentResolver content = getContentResolver();
 	    Cursor cursor = content.query(Calls.CONTENT_URI,
 	            PROJECTION, Calls.NUMBER+" like ?", new String[] { "%@%" }, Calls.DEFAULT_SORT_ORDER);
@@ -127,18 +153,18 @@ public class Sipdroid extends Activity implements OnDismissListener {
 	    sip_uri_box.setAdapter(adapter);
 	    sip_uri_box2.setAdapter(adapter);
 	}
-	
+
 	public static class CallsCursor extends CursorWrapper {
 		List<String> list;
-		
+
 		public int getCount() {
 			return list.size();
 		}
-		
+
 		public String getString(int i) {
 			return list.get(getPosition());
 		}
-		
+
 		public CallsCursor(Cursor cursor) {
 			super(cursor);
 			list = new ArrayList<String>();
@@ -153,30 +179,30 @@ public class Sipdroid extends Activity implements OnDismissListener {
 			}
 			moveToFirst();
 		}
-		
+
 	}
-	
+
 	public static class CallsAdapter extends CursorAdapter implements Filterable {
 	    public CallsAdapter(Context context, Cursor c) {
 	        super(context, c);
 	        mContent = context.getContentResolver();
 	    }
-	
+
 	    public View newView(Context context, Cursor cursor, ViewGroup parent) {
 	        final LayoutInflater inflater = LayoutInflater.from(context);
 	        final TextView view = (TextView) inflater.inflate(
 	                android.R.layout.simple_dropdown_item_1line, parent, false);
-	    	String phoneNumber = cursor.getString(1); 
+	    	String phoneNumber = cursor.getString(1);
 	        view.setText(phoneNumber);
 	        return view;
 	    }
-	
+
 	    @Override
 	    public void bindView(View view, Context context, Cursor cursor) {
 	    	String phoneNumber = cursor.getString(1);
 	        ((TextView) view).setText(phoneNumber);
 	    }
-	
+
 	    @Override
 	    public String convertToString(Cursor cursor) {
 	    	String phoneNumber = cursor.getString(1);
@@ -184,13 +210,13 @@ public class Sipdroid extends Activity implements OnDismissListener {
 	    		phoneNumber = phoneNumber.substring(0,phoneNumber.indexOf(" <"));
 	        return phoneNumber;
 	    }
-	
+
 	    @Override
 	    public Cursor runQueryOnBackgroundThread(CharSequence constraint) {
 	        if (getFilterQueryProvider() != null) {
 	            return new CallsCursor(getFilterQueryProvider().runQuery(constraint));
 	        }
-	
+
 	        StringBuilder buffer;
 	        String[] args;
 	        buffer = new StringBuilder();
@@ -201,15 +227,15 @@ public class Sipdroid extends Activity implements OnDismissListener {
 	        String arg = "%" + (constraint != null && constraint.length() > 0?
        				constraint.toString() : "@") + "%";
 	        args = new String[] { arg, arg};
-	
+
 	        return new CallsCursor(mContent.query(Calls.CONTENT_URI, PROJECTION,
 	                buffer.toString(), args,
 	                Calls.NUMBER + " asc"));
 	    }
-	
-	    private ContentResolver mContent;        
+
+	    private ContentResolver mContent;
 	}
-	
+
 	private static final String[] PROJECTION = new String[] {
         Calls._ID,
         Calls.NUMBER,
@@ -219,13 +245,17 @@ public class Sipdroid extends Activity implements OnDismissListener {
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
-		
+
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.sipdroid);
 		sip_uri_box = (AutoCompleteTextView) findViewById(R.id.txt_callee);
 		sip_uri_box2 = (AutoCompleteTextView) findViewById(R.id.txt_callee2);
+
+		//locationText = (TextView)findViewById(R.id.showLocation);
+
 		sip_uri_box.setOnKeyListener(new OnKeyListener() {
 		    public boolean onKey(View v, int keyCode, KeyEvent event) {
+				getLocation();
 		        if (event.getAction() == KeyEvent.ACTION_DOWN &&
 		        		keyCode == KeyEvent.KEYCODE_ENTER) {
 		          call_menu(sip_uri_box);
@@ -237,11 +267,14 @@ public class Sipdroid extends Activity implements OnDismissListener {
 		sip_uri_box.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
+				getLocation();
 				call_menu(sip_uri_box);
+
 			}
 		});
 		sip_uri_box2.setOnKeyListener(new OnKeyListener() {
 		    public boolean onKey(View v, int keyCode, KeyEvent event) {
+				getLocation();
 		        if (event.getAction() == KeyEvent.ACTION_DOWN &&
 		        		keyCode == KeyEvent.KEYCODE_ENTER) {
 		          call_menu(sip_uri_box2);
@@ -253,7 +286,9 @@ public class Sipdroid extends Activity implements OnDismissListener {
 		sip_uri_box2.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
+				getLocation();
 				call_menu(sip_uri_box2);
+
 			}
 		});
 		on(this,true);
@@ -267,6 +302,8 @@ public class Sipdroid extends Activity implements OnDismissListener {
 		});
 
 		final Context mContext = this;
+
+
 
 		Button settingsButton = (Button) findViewById(R.id.settings_button);
 		settingsButton.setOnClickListener(new Button.OnClickListener() {
@@ -288,7 +325,7 @@ public class Sipdroid extends Activity implements OnDismissListener {
 		});
 
 		final OnDismissListener listener = this;
-		
+
 		createButton = (Button) findViewById(R.id.create_button);
 		createButton.setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View v) {
@@ -297,7 +334,7 @@ public class Sipdroid extends Activity implements OnDismissListener {
 		        createDialog.show();
 			}
 		});
-		
+
 		if (!PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Settings.PREF_NOPORT, Settings.DEFAULT_NOPORT)) {
 			boolean ask = false;
     		for (int i = 0; i < SipdroidEngine.LINES; i++) {
@@ -327,7 +364,7 @@ public class Sipdroid extends Activity implements OnDismissListener {
 	                })
 	            .setNeutralButton(R.string.no, new DialogInterface.OnClickListener() {
 	                    public void onClick(DialogInterface dialog, int whichButton) {
-	
+
 	                    }
 	                })
 	            .setNegativeButton(R.string.dontask, new DialogInterface.OnClickListener() {
@@ -346,12 +383,12 @@ public class Sipdroid extends Activity implements OnDismissListener {
 	                    public void onClick(DialogInterface dialog, int whichButton) {
 	                		Editor edit = PreferenceManager.getDefaultSharedPreferences(mContext).edit();
 	                		edit.putString(Settings.PREF_PREF, Settings.VAL_PREF_SIP);
-	                		edit.commit();	
+	                		edit.commit();
 	                    }
 	                })
 	            .setNeutralButton(R.string.no, new DialogInterface.OnClickListener() {
 	                    public void onClick(DialogInterface dialog, int whichButton) {
-	
+
 	                    }
 	                })
 	            .setNegativeButton(R.string.dontask, new DialogInterface.OnClickListener() {
@@ -362,6 +399,21 @@ public class Sipdroid extends Activity implements OnDismissListener {
 	                    }
 	                })
 				.show();
+		//////////////////////////////////Location modification
+
+		getLocationBtn = (Button)findViewById(R.id.btnGetLocation);
+		locationText = (TextView)findViewById(R.id.showLocation);
+
+		getLocationBtn.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				getLocation();
+			}
+		});
+
+
+
+		///////////////////////////End Location modification
 	}
 
 	public static boolean on(Context context) {
@@ -407,14 +459,14 @@ public class Sipdroid extends Activity implements OnDismissListener {
 		m.setIcon(android.R.drawable.ic_menu_close_clear_cancel);
 		m = menu.add(0, CONFIGURE_MENU_ITEM, 0, R.string.menu_settings);
 		m.setIcon(android.R.drawable.ic_menu_preferences);
-						
+
 		return result;
 	}
 
 	void call_menu(AutoCompleteTextView view)
 	{
 		String target = view.getText().toString();
-		if (m_AlertDlg != null) 
+		if (m_AlertDlg != null)
 		{
 			m_AlertDlg.cancel();
 		}
@@ -433,7 +485,7 @@ public class Sipdroid extends Activity implements OnDismissListener {
 				.setCancelable(true)
 				.show();
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		boolean result = super.onOptionsItemSelected(item);
@@ -441,7 +493,7 @@ public class Sipdroid extends Activity implements OnDismissListener {
 
 		switch (item.getItemId()) {
 		case ABOUT_MENU_ITEM:
-			if (m_AlertDlg != null) 
+			if (m_AlertDlg != null)
 			{
 				m_AlertDlg.cancel();
 			}
@@ -452,8 +504,8 @@ public class Sipdroid extends Activity implements OnDismissListener {
 			.setCancelable(true)
 			.show();
 			break;
-			
-		case EXIT_MENU_ITEM: 
+
+		case EXIT_MENU_ITEM:
 			on(this,false);
 			Receiver.engine(this).halt();
 			Receiver.mSipdroidEngine = null;
@@ -461,7 +513,7 @@ public class Sipdroid extends Activity implements OnDismissListener {
 			stopService(new Intent(this,RegisterService.class));
 			finish();
 			break;
-			
+
 		case CONFIGURE_MENU_ITEM: {
 			try {
 				intent = new Intent(this, org.sipdroid.sipua.ui.Settings.class);
@@ -474,18 +526,18 @@ public class Sipdroid extends Activity implements OnDismissListener {
 
 		return result;
 	}
-	
+
 	public static String getVersion() {
 		return getVersion(Receiver.mContext);
 	}
-	
+
 	public static String getVersion(Context context) {
 		final String unknown = "Unknown";
-		
+
 		if (context == null) {
 			return unknown;
 		}
-		
+
 		try {
 	    	String ret = context.getPackageManager()
 			   .getPackageInfo(context.getPackageName(), 0)
@@ -494,12 +546,66 @@ public class Sipdroid extends Activity implements OnDismissListener {
 	    		ret = ret.substring(0,ret.indexOf(" + "))+"b";
 	    	return ret;
 		} catch(NameNotFoundException ex) {}
-		
-		return unknown;		
+
+		return unknown;
 	}
 
 	@Override
 	public void onDismiss(DialogInterface dialog) {
 		onResume();
 	}
+	/*
+	public static Application getApplicationUsingReflection() throws Exception {
+		return (Application) Class.forName("android.app.ActivityThread")
+				.getMethod("currentApplication").invoke(null, (Object[]) null);
+	}
+	*/
+
+	/*
+	public static Application getApplicationUsingReflection() throws Exception {
+		return (Application) Class.forName("android.app.AppGlobals")
+				.getMethod("getInitialApplication").invoke(null, (Object[]) null);
+	}
+	*/
+	/*public Context getCContext(){
+		return getContext();
+	}
+*/
+	void getLocation() {
+		try {
+			locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+			locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5, (LocationListener) this);
+			locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 5, (LocationListener) this);
+
+		}
+		catch(SecurityException e) {
+			e.printStackTrace();
+		}
+	}
+
+	String locationEmergency;
+	public void onLocationChanged(Location location) {
+		locationText.setText("Current Location: " + location.getLatitude() + ", " + location.getLongitude());
+		locationEmergency = Double.toString(location.getLatitude()) + Double.toString(location.getLongitude());
+	}
+
+
+	public void onProviderDisabled(String provider) {
+		Toast.makeText(Sipdroid.this, "Please Enable GPS and Internet", Toast.LENGTH_SHORT).show();
+	}
+
+
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+
+	}
+
+
+	public void onProviderEnabled(String provider) {
+
+	}
+
+	/*public double getLocationString(){
+		return locationEmergency;
+	}
+	*/
 }

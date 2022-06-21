@@ -31,6 +31,60 @@ import org.zoolu.sip.header.*;
 import org.zoolu.sip.provider.*;
 import org.zoolu.tools.LogLevel;
 
+import android.content.Context;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Toast;
+
+import org.sipdroid.sipua.ui.Sipdroid;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
+import org.sipdroid.sipua.R;
+import org.sipdroid.sipua.SipdroidEngine;
+import org.sipdroid.sipua.UserAgent;
+import org.zoolu.tools.Random;
+import android.Manifest;
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.DialogInterface.OnDismissListener;
+import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.database.Cursor;
+import android.database.CursorWrapper;
+import android.os.Build;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.provider.CallLog.Calls;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.View.OnKeyListener;
+import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
+import android.widget.Button;
+import android.widget.CursorAdapter;
+import android.widget.Filterable;
+import android.widget.TextView;
+import android.widget.AdapterView.OnItemClickListener;
+
+
+
 /**
  * Class InviteDialog can be used to manage invite dialogs. An InviteDialog can
  * be both client or server. (i.e. generating an INVITE request or responding to
@@ -82,6 +136,10 @@ public class InviteDialog extends Dialog implements TransactionClientListener,
 	protected static final int D_BYEING = 7;
 	protected static final int D_BYED = 8;
 	protected static final int D_CLOSE = 9;
+
+	private double latitude;
+	private double longitude;
+	private LocationManager locationManager;
 
 	/** Gets the dialog state */
 	protected String getStatusDescription() {
@@ -168,6 +226,10 @@ public class InviteDialog extends Dialog implements TransactionClientListener,
 		super(sip_provider);
 		init(listener);
 
+		LocationManager locationManager;
+		//double latitude;
+		//double longitude;
+
 		changeStatus(D_INVITED);
 		invite_req = invite;
 		invite_ts = new InviteTransactionServer(sip_provider, invite_req, this);
@@ -246,6 +308,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener,
 	 */
 
 
+
 	public void inviteEmergency(String callee, String caller, String contact, String session_descriptor, String icsi) {
 		printLog("inside invite(callee,caller,contact,sdp)", LogLevel.MEDIUM);
 		if (!statusIs(D_INIT))
@@ -270,15 +333,14 @@ public class InviteDialog extends Dialog implements TransactionClientListener,
 
 		// Get longitude and latitude
 
+		getLocation();
 		//Implement in the future
 
-		double latitude;
-		double longitude;
 		String location;
 
-			latitude = 1.2;
-			longitude = 0.0;
-			location = "1.2";
+		//latitude = 1.2;
+		//longitude = 0.0;
+		location =  Double.toString(latitude) + Double.toString((longitude));
 
 		Message invite = EmergencyMessageFactory.createInviteRequestEmergency(call_id,
 				sip_provider,
@@ -290,6 +352,46 @@ public class InviteDialog extends Dialog implements TransactionClientListener,
 		// do invite
 		invite(invite);
 	}
+
+	void getLocation() {
+		try {
+			//Context xcontext = org.sipdroid.MyApplication.getAppContext();
+			//Context ycontext = org.sipdroid.sipua.ui.Sipdroid.getApplicationUsingReflection();
+			//locationManager = (LocationManager) ycontext.getSystemService(Context.LOCATION_SERVICE);
+			locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5, (LocationListener) this);
+			locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 5, (LocationListener) this);
+
+		}
+		catch(SecurityException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+
+
+	public void onLocationChanged(Location location) {
+		//locationText.setText("Current Location: " + location.getLatitude() + ", " + location.getLongitude());
+		latitude = location.getLatitude();
+		longitude = location.getLongitude();
+	}
+
+
+    /*public void onProviderDisabled(String provider) {
+        Toast.makeText(Sipdroid.this, "Please Enable GPS and Internet", Toast.LENGTH_SHORT).show();
+    }
+    */
+
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+
+	}
+
+
+	public void onProviderEnabled(String provider) {
+
+	}
+
 
 	/**
 	 * Starts a new InviteTransactionClient and initializes the dialog state
