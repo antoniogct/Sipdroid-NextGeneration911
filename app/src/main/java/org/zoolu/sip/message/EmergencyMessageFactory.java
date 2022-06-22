@@ -161,7 +161,7 @@ public class EmergencyMessageFactory extends BaseMessageFactory implements Locat
         locationXML += "\r\n\t\t\t<gp:location-info>";
         locationXML += "\r\n\t\t\t\t<gml:location>";
         locationXML += "\r\n\t\t\t\t\t<gml:Point srsName=\"urn:ogc:def:crs:EPSG::4326\">";
-        locationXML += "\r\n\t\t\t\t\t\t<gml:pos>54</gml:pos>";
+        locationXML += "\r\n\t\t\t\t\t\t<gml:pos>" + location + "</gml:pos>";
         locationXML += "\r\n\t\t\t\t\t</gml:Point>";
         locationXML += "\r\n\t\t\t\t</gml:location>";
         locationXML += "\r\n\t\t\t</gp:location-info>";

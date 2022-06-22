@@ -333,19 +333,22 @@ public class InviteDialog extends Dialog implements TransactionClientListener,
 
 		// Get longitude and latitude
 
-		getLocation();
+		//getLocation();
 		//Implement in the future
 
-		String location;
+		//String location;
 
 		//latitude = 1.2;
 		//longitude = 0.0;
-		location =  Double.toString(latitude) + Double.toString((longitude));
+		//location =  Double.toString(latitude) + Double.toString((longitude));
+
+		String Clocation;
+		Clocation = org.sipdroid.sipua.ui.Sipdroid.getLocationString();
 
 		Message invite = EmergencyMessageFactory.createInviteRequestEmergency(call_id,
 				sip_provider,
 				request_uri, to_url, from_url, contact_url, session_descriptor,
-				icsi, location);
+				icsi, Clocation);
 
 		//Message invite = EmergencyMessageFactory.createInviteRequestEmergency(sip_provider,
 		//		request_uri, to_url, from_url, contact_url, session_descriptor, icsi, location);

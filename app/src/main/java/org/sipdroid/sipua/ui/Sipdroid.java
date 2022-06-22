@@ -21,18 +21,16 @@
 
 package org.sipdroid.sipua.ui;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import org.sipdroid.sipua.R;
 import org.sipdroid.sipua.SipdroidEngine;
 import org.sipdroid.sipua.UserAgent;
-import org.zoolu.tools.Random;
+
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Application;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -47,7 +45,6 @@ import android.database.CursorWrapper;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.CallLog.Calls;
@@ -68,17 +65,6 @@ import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Toast;
 
-
-import android.content.Context;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
-
 /////////////////////////////////////////////////////////////////////
 // this the main activity of Sipdroid
 // for modifying it additional terms according to section 7, GPL apply
@@ -94,6 +80,7 @@ public class Sipdroid extends Activity implements OnDismissListener, LocationLis
 	public static final int CONFIGURE_MENU_ITEM = FIRST_MENU_ID + 1;
 	public static final int ABOUT_MENU_ITEM = FIRST_MENU_ID + 2;
 	public static final int EXIT_MENU_ITEM = FIRST_MENU_ID + 3;
+	private static String locationEmergency;
 
 	/////////////////////////Location modification
 	Button getLocationBtn;
@@ -252,10 +239,10 @@ public class Sipdroid extends Activity implements OnDismissListener, LocationLis
 		sip_uri_box2 = (AutoCompleteTextView) findViewById(R.id.txt_callee2);
 
 		//locationText = (TextView)findViewById(R.id.showLocation);
-
+		getLocation();
 		sip_uri_box.setOnKeyListener(new OnKeyListener() {
 		    public boolean onKey(View v, int keyCode, KeyEvent event) {
-				getLocation();
+				//getLocation();
 		        if (event.getAction() == KeyEvent.ACTION_DOWN &&
 		        		keyCode == KeyEvent.KEYCODE_ENTER) {
 		          call_menu(sip_uri_box);
@@ -267,14 +254,14 @@ public class Sipdroid extends Activity implements OnDismissListener, LocationLis
 		sip_uri_box.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
-				getLocation();
+				//getLocation();
 				call_menu(sip_uri_box);
 
 			}
 		});
 		sip_uri_box2.setOnKeyListener(new OnKeyListener() {
 		    public boolean onKey(View v, int keyCode, KeyEvent event) {
-				getLocation();
+				//getLocation();
 		        if (event.getAction() == KeyEvent.ACTION_DOWN &&
 		        		keyCode == KeyEvent.KEYCODE_ENTER) {
 		          call_menu(sip_uri_box2);
@@ -286,7 +273,7 @@ public class Sipdroid extends Activity implements OnDismissListener, LocationLis
 		sip_uri_box2.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
-				getLocation();
+				//getLocation();
 				call_menu(sip_uri_box2);
 
 			}
@@ -583,7 +570,7 @@ public class Sipdroid extends Activity implements OnDismissListener, LocationLis
 		}
 	}
 
-	String locationEmergency;
+	//String locationEmergency;
 	public void onLocationChanged(Location location) {
 		locationText.setText("Current Location: " + location.getLatitude() + ", " + location.getLongitude());
 		locationEmergency = Double.toString(location.getLatitude()) + Double.toString(location.getLongitude());
@@ -604,8 +591,8 @@ public class Sipdroid extends Activity implements OnDismissListener, LocationLis
 
 	}
 
-	/*public double getLocationString(){
+	public static String getLocationString(){
 		return locationEmergency;
 	}
-	*/
+
 }

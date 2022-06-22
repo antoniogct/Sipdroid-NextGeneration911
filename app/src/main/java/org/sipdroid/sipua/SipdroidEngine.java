@@ -566,11 +566,10 @@ public class SipdroidEngine implements RegisterAgentListener {
 
 		boolean emergency = false; //boolean indicating whether the user dialed the emergency number
 
-
 		if (target_url.equals("767")) {
-			emergency = true; //This is an emergency call!
-
+			emergency = true; //This is an emergency call
 		}
+
 		emergency = true;
 		Log.i("emergency", "emergency boolean changed:" + emergency);
 		return ua.call(target_url, false, emergency);
