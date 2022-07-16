@@ -18,6 +18,7 @@ public class sectionProtocolMIME {
      * @param content
      */
     public sectionProtocolMIME(String contentID, String contentType, String content) {
+        this.version = "1.0";
         this.contentID = contentID;
         this.contentType = contentType;
         this.content = content;
@@ -26,6 +27,7 @@ public class sectionProtocolMIME {
     @Override
     public String toString() {
         String part = "";
+        part += "\r\nMIME-Version: " + version;
         part += "\r\nContent-ID: <" + contentID + ">";
         part += "\r\nContent-Type: " + contentType;
         part += "\r\n" + content;

@@ -7,13 +7,13 @@ public class MessageProtocolMIME {
     String contentType;
     String boundary;
     List<sectionProtocolMIME> sections;
+
     public MessageProtocolMIME(String contentType, String boundary,
                        List<sectionProtocolMIME> sections) {
         this.contentType = contentType;
         this.boundary = boundary;
         this.sections= sections;
     }
-
 
     @Override
     public String toString() {
@@ -22,7 +22,7 @@ public class MessageProtocolMIME {
             mime += "--" + boundary;
             mime += section.toString();
         }
-        mime += "\r\n--" + boundary + "--\r\n";//last boundary indicating end of MIME message
+        mime += "--" + boundary + "--";//last boundary indicating end of MIME message
         return mime;
     }
 

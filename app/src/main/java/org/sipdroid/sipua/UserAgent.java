@@ -267,6 +267,10 @@ public class UserAgent extends CallListenerAdapter {
 	}
 
 	String realm;
+
+	//The public boolean call method is modified so that it accepts the boolean emergency variable.
+	// If a call is received with this variable set to true then the flow is redirected to the ExtendedCall class,
+	// specifically to the new callEmergency method.
 	
 	/** Makes a new call (acting as UAC). */
 	public boolean call(String target_url, boolean send_anonymous, boolean emergency) {
@@ -315,7 +319,8 @@ public class UserAgent extends CallListenerAdapter {
 		
 		target_url = sip_provider.completeNameAddress(target_url).toString();
 
-		if(emergency) { //change request URI in case of an emergency call
+		//In case of an emergency call, the call flow is redirected to the callEmergency method.
+		if(emergency) {
 
 			//Go to ExtendedCall.java and execute callNG911(...)
 			if (user_profile.no_offer) {

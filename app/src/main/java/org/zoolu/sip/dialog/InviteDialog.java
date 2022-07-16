@@ -298,22 +298,28 @@ public class InviteDialog extends Dialog implements TransactionClientListener,
 		invite(invite);
 	}
 	/**
-	 * Creates a special INVITE request
+	 * Starts a new InviteTransactionClient in an emergency call and initializes the dialog state
+	 * information.
 	 *
-	 * With location information embedded in the body
- 	*/
-	/**
-	 * This method is essential for the NG911 project
+	 * @param callee
+	 *            the callee url (and display name)
+	 * @param caller
+	 *            the caller url (and display name)
+	 * @param contact
+	 *            the contact url OR the contact username
+	 * @param session_descriptor
+	 *            SDP body
+	 * @param icsi
+	 *            the ICSI for this session
 	 *
 	 */
-
-
 
 	public void inviteEmergency(String callee, String caller, String contact, String session_descriptor, String icsi) {
 		printLog("inside invite(callee,caller,contact,sdp)", LogLevel.MEDIUM);
 		if (!statusIs(D_INIT))
 			return;
-		// else
+
+
 		NameAddress to_url = new NameAddress(callee);
 		NameAddress from_url = new NameAddress(caller);
 		SipURL request_uri = to_url.getAddress();
@@ -327,73 +333,27 @@ public class InviteDialog extends Dialog implements TransactionClientListener,
 		} else
 			contact_url = from_url;
 
-		// 0. Get Call ID, in order to send it to location provider
-		final String call_id = sip_provider.pickCallId();
-
-
-		// Get longitude and latitude
-
-		//getLocation();
-		//Implement in the future
-
-		//String location;
-
-		//latitude = 1.2;
-		//longitude = 0.0;
-		//location =  Double.toString(latitude) + Double.toString((longitude));
 
 		String Clocation;
 		Clocation = org.sipdroid.sipua.ui.Sipdroid.getLocationString();
 
-		Message invite = EmergencyMessageFactory.createInviteRequestEmergency(call_id,
+
+		final String caller_identifier = sip_provider.pickCallId();
+
+		Message invite = EmergencyMessageFactory.createInviteRequestEmergency(caller_identifier,
 				sip_provider,
 				request_uri, to_url, from_url, contact_url, session_descriptor,
 				icsi, Clocation);
 
-		//Message invite = EmergencyMessageFactory.createInviteRequestEmergency(sip_provider,
-		//		request_uri, to_url, from_url, contact_url, session_descriptor, icsi, location);
 		// do invite
 		invite(invite);
 	}
 
-	void getLocation() {
-		try {
-			//Context xcontext = org.sipdroid.MyApplication.getAppContext();
-			//Context ycontext = org.sipdroid.sipua.ui.Sipdroid.getApplicationUsingReflection();
-			//locationManager = (LocationManager) ycontext.getSystemService(Context.LOCATION_SERVICE);
-			locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5, (LocationListener) this);
-			locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 5, (LocationListener) this);
-
-		}
-		catch(SecurityException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 
 
-	public void onLocationChanged(Location location) {
-		//locationText.setText("Current Location: " + location.getLatitude() + ", " + location.getLongitude());
-		latitude = location.getLatitude();
-		longitude = location.getLongitude();
-	}
 
 
-    /*public void onProviderDisabled(String provider) {
-        Toast.makeText(Sipdroid.this, "Please Enable GPS and Internet", Toast.LENGTH_SHORT).show();
-    }
-    */
-
-	public void onStatusChanged(String provider, int status, Bundle extras) {
-
-	}
-
-
-	public void onProviderEnabled(String provider) {
-
-	}
 
 
 	/**

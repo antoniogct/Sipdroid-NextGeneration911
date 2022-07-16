@@ -562,16 +562,19 @@ public class SipdroidEngine implements RegisterAgentListener {
 			ua.printLog("ONLY SIGNALING, NO MEDIA");
 		}
 
-		Log.i("emergency", "emergency boolean reached");
+		///The call flow is modified when an emergency call begins.
+		// To do this, the emergency variable is created and set to true when 911 or 767 is called.
 
-		boolean emergency = false; //boolean indicating whether the user dialed the emergency number
+		boolean emergency = false;
 
-		if (target_url.equals("767")) {
-			emergency = true; //This is an emergency call
+		if (target_url.equals("767") || target_url.equals("911")) {
+
+
+			emergency = true;
+
+
+			Log.i("emergency", "emergency call started");
 		}
-
-		emergency = true;
-		Log.i("emergency", "emergency boolean changed:" + emergency);
 		return ua.call(target_url, false, emergency);
 	}
 

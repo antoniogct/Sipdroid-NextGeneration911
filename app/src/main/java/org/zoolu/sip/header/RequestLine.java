@@ -44,6 +44,10 @@ public class RequestLine {
 		method = request;
 		url = sipUrl;
 	}
+	public RequestLine(String request, String sipUrl, boolean emergency) {
+		method = request;
+		url = new SipURL(sipUrl, emergency);
+	}
 
 	/** Create a new copy of the RequestLine */
 	public Object clone() {

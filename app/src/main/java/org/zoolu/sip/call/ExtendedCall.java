@@ -128,12 +128,8 @@ public class ExtendedCall extends Call implements ExtendedInviteDialogListener {
 			dialog.inviteWithoutOffer(r_user, from, contact);
 	}
 
-	/**
-	 * when the emergency number is dialed the following method is called in UserAgent.java
-	 *
-	 * It will redirect the flow to the method inviteEmergency(...)
-	 * inside InviteDialog.java
-	 */
+
+	//This method redirects the call flow to the inviteEmergency method when it is an emergency call.
 
 	public void callEmergency(String r_user, String from, String contact, String sdp,
 						  String icsi) {

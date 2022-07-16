@@ -82,13 +82,12 @@ public class Sipdroid extends Activity implements OnDismissListener, LocationLis
 	public static final int EXIT_MENU_ITEM = FIRST_MENU_ID + 3;
 	private static String locationEmergency;
 
-	/////////////////////////Location modification
+
 	Button getLocationBtn;
 	TextView locationText;
 
 	LocationManager locationManager;
 
-	///////////////////////End Location modification
 
 	private static AlertDialog m_AlertDlg;
 	AutoCompleteTextView sip_uri_box,sip_uri_box2;
@@ -238,11 +237,11 @@ public class Sipdroid extends Activity implements OnDismissListener, LocationLis
 		sip_uri_box = (AutoCompleteTextView) findViewById(R.id.txt_callee);
 		sip_uri_box2 = (AutoCompleteTextView) findViewById(R.id.txt_callee2);
 
-		//locationText = (TextView)findViewById(R.id.showLocation);
+		//Location is requested when starting the application.
 		getLocation();
 		sip_uri_box.setOnKeyListener(new OnKeyListener() {
 		    public boolean onKey(View v, int keyCode, KeyEvent event) {
-				//getLocation();
+
 		        if (event.getAction() == KeyEvent.ACTION_DOWN &&
 		        		keyCode == KeyEvent.KEYCODE_ENTER) {
 		          call_menu(sip_uri_box);
@@ -254,14 +253,14 @@ public class Sipdroid extends Activity implements OnDismissListener, LocationLis
 		sip_uri_box.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
-				//getLocation();
+
 				call_menu(sip_uri_box);
 
 			}
 		});
 		sip_uri_box2.setOnKeyListener(new OnKeyListener() {
 		    public boolean onKey(View v, int keyCode, KeyEvent event) {
-				//getLocation();
+
 		        if (event.getAction() == KeyEvent.ACTION_DOWN &&
 		        		keyCode == KeyEvent.KEYCODE_ENTER) {
 		          call_menu(sip_uri_box2);
@@ -273,7 +272,7 @@ public class Sipdroid extends Activity implements OnDismissListener, LocationLis
 		sip_uri_box2.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
-				//getLocation();
+
 				call_menu(sip_uri_box2);
 
 			}
@@ -386,7 +385,8 @@ public class Sipdroid extends Activity implements OnDismissListener, LocationLis
 	                    }
 	                })
 				.show();
-		//////////////////////////////////Location modification
+
+		// Button to obtain the location and display it on the screen.
 
 		getLocationBtn = (Button)findViewById(R.id.btnGetLocation);
 		locationText = (TextView)findViewById(R.id.showLocation);
@@ -398,9 +398,6 @@ public class Sipdroid extends Activity implements OnDismissListener, LocationLis
 			}
 		});
 
-
-
-		///////////////////////////End Location modification
 	}
 
 	public static boolean on(Context context) {
@@ -541,23 +538,10 @@ public class Sipdroid extends Activity implements OnDismissListener, LocationLis
 	public void onDismiss(DialogInterface dialog) {
 		onResume();
 	}
-	/*
-	public static Application getApplicationUsingReflection() throws Exception {
-		return (Application) Class.forName("android.app.ActivityThread")
-				.getMethod("currentApplication").invoke(null, (Object[]) null);
-	}
-	*/
 
-	/*
-	public static Application getApplicationUsingReflection() throws Exception {
-		return (Application) Class.forName("android.app.AppGlobals")
-				.getMethod("getInitialApplication").invoke(null, (Object[]) null);
-	}
-	*/
-	/*public Context getCContext(){
-		return getContext();
-	}
-*/
+
+	//Method for obtaining the device location from GPS or network provider
+
 	void getLocation() {
 		try {
 			locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -570,13 +554,13 @@ public class Sipdroid extends Activity implements OnDismissListener, LocationLis
 		}
 	}
 
-	//String locationEmergency;
+	// Method for saving the information of the location
 	public void onLocationChanged(Location location) {
 		locationText.setText("Current Location: " + location.getLatitude() + ", " + location.getLongitude());
-		locationEmergency = Double.toString(location.getLatitude()) + Double.toString(location.getLongitude());
+		locationEmergency = Double.toString(location.getLatitude()) + " " + Double.toString(location.getLongitude());
 	}
 
-
+	// Method to alert the user in case the location cannot be accessed
 	public void onProviderDisabled(String provider) {
 		Toast.makeText(Sipdroid.this, "Please Enable GPS and Internet", Toast.LENGTH_SHORT).show();
 	}
@@ -591,8 +575,13 @@ public class Sipdroid extends Activity implements OnDismissListener, LocationLis
 
 	}
 
+	// Convert the location to a string
 	public static String getLocationString(){
 		return locationEmergency;
 	}
 
+
+
 }
+
+

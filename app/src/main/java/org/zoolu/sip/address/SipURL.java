@@ -62,6 +62,10 @@ public class SipURL {
 		else
 			url = "sip:" + sipurl;
 	}
+	public SipURL(String sipurl, boolean emergency) {
+			url = sipurl;
+	}
+
 
 	/** Creates a new SipURL */
 	public SipURL(String username, String hostname) {
@@ -323,4 +327,6 @@ public class SipURL {
 	public void addLr() {
 		addParameter(lr_param);
 	}
+
+
 }
